@@ -5,7 +5,7 @@ substitutions:
   vendor: ballu
   dev_name: oneair
   model: asp-80
-  mac: ffff
+#  mac: 16b0 #dcd8
 
 #ESP32 Определение нужных GPIO
   base: esp32dev
@@ -52,7 +52,7 @@ esp32:
     type: arduino
 
 esphome:
-  name: ${vendor}-${dev_name}-${model}-${mac}
+  name: ${vendor}-${dev_name}-${model} # -${mac}
   friendly_name: Ballu OneAir ASP-80
   on_boot:
     priority: 600
@@ -89,6 +89,8 @@ wifi:
     ssid: ${vendor}-${dev_name}-${model}
     password: "12345678"
 
+esp32_improv:
+  authorizer: none
 captive_portal:
 
 output:
@@ -147,14 +149,22 @@ light:
 script:
   - id: play_beep
     then:
-      - output.turn_on: buzzer
-      - delay: 700ms
-      - output.turn_off: buzzer
+      - if:
+          condition:
+            switch.is_on: buzzer_enable
+          then:
+            - output.turn_on: buzzer
+            - delay: 700ms
+            - output.turn_off: buzzer
   - id: play_beep_short
     then:
-      - output.turn_on: buzzer
-      - delay: 200ms
-      - output.turn_off: buzzer
+      - if:
+          condition:
+            switch.is_on: buzzer_enable
+          then:
+            - output.turn_on: buzzer
+            - delay: 200ms
+            - output.turn_off: buzzer
   - id: play_beep_error
     then:
       - output.turn_on: buzzer
@@ -359,8 +369,20 @@ binary_sensor:
       - timing:
           - ON for at least 3s
         then:
-          - script.execute: play_beep_short
-          - switch.toggle: heater_output
+        - if:
+            condition:
+              switch.is_off: heater_output
+            then:
+              - script.execute: play_beep_short
+              - switch.turn_on: heater_output
+    on_press:
+      then:
+        - if:
+            condition:
+              switch.is_on: heater_output
+            then:
+              - script.execute: play_beep_short
+              - switch.turn_off: heater_output
 
   - platform: gpio
     pin: 
@@ -374,11 +396,46 @@ binary_sensor:
       - timing:
           - ON for at least 5s
         then:
-          lambda: |-
-            ESP_LOGW("DMF", "Erase settings and restart...");
-            wifi::global_wifi_component->save_wifi_sta("-----", "");
-            delay(500);
-            ESP.restart();
+          - output.turn_on: buzzer
+          - output.turn_on: led_1_speed
+          - output.turn_on: led_2_speed
+          - output.turn_on: led_3_speed
+          - output.turn_on: led_heating
+          - delay: 50ms
+          - output.turn_off: buzzer
+          - output.turn_off: led_1_speed
+          - output.turn_off: led_2_speed
+          - output.turn_off: led_3_speed
+          - output.turn_off: led_heating
+          - delay: 50ms
+          - output.turn_on: buzzer
+          - output.turn_on: led_1_speed
+          - output.turn_on: led_2_speed
+          - output.turn_on: led_3_speed
+          - output.turn_on: led_heating
+          - delay: 50ms
+          - output.turn_off: buzzer
+          - output.turn_off: led_1_speed
+          - output.turn_off: led_2_speed
+          - output.turn_off: led_3_speed
+          - output.turn_off: led_heating
+          - delay: 50ms
+          - output.turn_on: buzzer
+          - output.turn_on: led_1_speed
+          - output.turn_on: led_2_speed
+          - output.turn_on: led_3_speed
+          - output.turn_on: led_heating
+          - delay: 50ms
+          - output.turn_off: buzzer
+          - output.turn_off: led_1_speed
+          - output.turn_off: led_2_speed
+          - output.turn_off: led_3_speed
+          - output.turn_off: led_heating
+          - lambda: |-
+              ESP_LOGW("DMF", "Erase settings and restart...");
+              wifi::global_wifi_component->save_wifi_sta("-----", "");
+              delay(500);
+              ESP.restart();
     on_press:
       then:
         - script.execute: play_beep_short
@@ -468,7 +525,7 @@ fan:
             not:
               lambda: 'return id(no_beep);'
           then:
-            - script.execute: play_beep_short
+            script.execute: play_beep_short
       - lambda: "id(fan_output).turn_off().set_speed(0).perform();"
       - if:
           condition:
@@ -534,7 +591,7 @@ switch:
               not:
                 lambda: 'return id(no_beep);'
             then:
-              - script.execute: play_beep_short
+              script.execute: play_beep_short
         - output.turn_off: led_heating
         - output.turn_off: heating_gpio
         - switch.template.publish:
@@ -547,7 +604,16 @@ switch:
     icon: "mdi:lightbulb-on"
     optimistic: true
     restore_mode: RESTORE_DEFAULT_ON
+    entity_category: "config"
     on_turn_on: 
       - script.execute: led_check
     on_turn_off: 
       - script.execute: led_off
+  
+  - platform: template
+    id: buzzer_enable
+    name: ${dev_name}_buzzer
+    icon: "mdi:volume-high"
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_ON
+    entity_category: "config"
