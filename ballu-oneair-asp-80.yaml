@@ -89,8 +89,6 @@ wifi:
     ssid: ${vendor}-${dev_name}-${model}
     password: "12345678"
 
-esp32_improv:
-  authorizer: none
 captive_portal:
 
 output:
