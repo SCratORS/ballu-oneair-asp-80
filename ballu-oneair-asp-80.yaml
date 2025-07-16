@@ -88,7 +88,7 @@ wifi:
   ap:
     ssid: ${vendor}-${dev_name}-${model}
     password: "12345678"
-
+web_server:
 captive_portal:
 
 output:
@@ -615,3 +615,7 @@ switch:
     optimistic: true
     restore_mode: RESTORE_DEFAULT_ON
     entity_category: "config"
+
+button:
+  - platform: safe_mode
+    name: ${dev_name}_safe_mode
