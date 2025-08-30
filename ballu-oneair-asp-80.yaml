@@ -276,14 +276,15 @@ sensor:
     id: source_ntc_sensor
     pin: ${sensor_ntc}
     update_interval: 10s
+    attenuation: auto
   - platform: ntc
     name: ${dev_name}_temperature
     id: temperature
     sensor: resistance_ntc_sensor
     calibration:
       b_constant: 3950
-      reference_temperature: 24.6°C
-      reference_resistance: 4.634kOhm
+      reference_temperature: 20°C
+      reference_resistance: 12.5kOhm
 
 text_sensor:
   - platform: wifi_info
