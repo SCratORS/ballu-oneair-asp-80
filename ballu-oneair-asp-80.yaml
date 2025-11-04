@@ -92,7 +92,8 @@ wifi:
 
 captive_portal:
 web_server:
-
+  local: true
+  
 output:
   - platform: gpio
     pin: ${buzzer}
