@@ -5,6 +5,7 @@ substitutions:
   vendor: ballu
   dev_name: oneair
   model: asp-80
+  TK2_mode: false # До 10.25 - true, после false
 #  mac: 16b0 #dcd8
 
 #ESP32 Определение нужных GPIO
@@ -82,14 +83,15 @@ ota:
   - platform: esphome
 
 wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_password
+  ssid: !secret wifi_ssid1
+  password: !secret wifi_password1
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
     ssid: ${vendor}-${dev_name}-${model}
     password: "12345678"
-web_server:
+
 captive_portal:
+web_server:
 
 output:
   - platform: gpio
@@ -303,6 +305,7 @@ binary_sensor:
     id: sensor_open
     name: ${dev_name}_open
     icon: "mdi:fan-alert"
+    use_interrupt: false
     pin:
       number: $sensor_open
       mode: INPUT_PULLUP
@@ -339,6 +342,7 @@ binary_sensor:
       number: ${touch_1}
       inverted: True
     id: touch_1
+    use_interrupt: false
     filters:
       - delayed_on: 100ms
       - delayed_off: 100ms
@@ -359,8 +363,9 @@ binary_sensor:
   - platform: gpio
     pin: 
       number: ${touch_2}
-      inverted: True
+      inverted: ${TK2_mode}
     id: touch_2
+    use_interrupt: false
     filters:
       - delayed_on: 100ms
       - delayed_off: 100ms
@@ -388,6 +393,7 @@ binary_sensor:
       number: ${touch_3}
       inverted: True
     id: touch_3
+    use_interrupt: false
     filters:
       - delayed_on: 100ms
       - delayed_off: 100ms
