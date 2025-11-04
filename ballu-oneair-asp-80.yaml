@@ -83,8 +83,8 @@ ota:
   - platform: esphome
 
 wifi:
-  ssid: !secret wifi_ssid1
-  password: !secret wifi_password1
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
     ssid: ${vendor}-${dev_name}-${model}
