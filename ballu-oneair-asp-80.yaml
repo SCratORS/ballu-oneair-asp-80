@@ -6,7 +6,7 @@ substitutions:
   dev_name: oneair
   model: asp-80
   TK2_mode: false # До 10.25 - true, после false
-#  mac: 16b0 #dcd8
+#  mac: 16b0 # Расскоментируй эту строку и 56 строку для задания уникального имени, чтобы не конфликтовало, если используешь несколько таких устройств. Вместо 16b0 впиши последние 4 символа МАС адреса своего устройства.
 
 #ESP32 Определение нужных GPIO
   base: esp32dev
@@ -58,7 +58,7 @@ esphome:
   on_boot:
     priority: 600
     then:
-      - output.turn_on: buzzer
+      - output.turn_on: buzzer  # Звук при включении включаем
       - output.turn_off: heating_gpio
       - output.turn_off: fan_power
       - output.turn_on: led_1_speed
@@ -72,7 +72,11 @@ esphome:
       - output.turn_off: led_heating
       - fan.turn_off: fan_output
       - lambda: 'id(no_beep) = false;'
-      - output.turn_off: buzzer
+      - output.turn_off: buzzer   # Звук при включении отключаем
+# Автоматические запуск на 1 скорости после включения
+#      - lambda: |-
+#          id(fan_output).turn_on().set_preset_mode("Low").perform();
+
 # Enable logging
 logger:
 
@@ -103,8 +107,8 @@ output:
     pin: ${fan_pwm}
     id: fan_pwm_gpio
     inverted: True
-#    min_power: 0.22 почему-то если добавить, то вообще не работает. Шим тупо не включается.
-    max_power: 0.74
+#    min_power: 0.22 # Минимальная мощность. при попытке выставить мощность менее 20% турбина не запускается, но если активировать эту строку, то почему-то вообще не работает. Шим тупо не включается.
+    max_power: 0.74 # Масксимальная мощность подаваемая на турбину. Больше 74 - нехватает питания для турбины, будет перезагрузка при попытке включить ее на максимум.
 
   - platform: ledc
     pin: ${led_heating}
