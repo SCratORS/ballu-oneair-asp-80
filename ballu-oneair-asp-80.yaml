@@ -480,13 +480,13 @@ fan:
     on_preset_set:
       - lambda: |-
           id(no_mode) = true;
-          if (id(fan_output).preset_mode == "Low") {
+          if (id(fan_output).get_preset_mode() == "Low") {
             id(fan_output).turn_on().set_speed(60).perform();
             id(mode) = 0;
-          } else if (id(fan_output).preset_mode == "Middle") {
+          } else if (id(fan_output).get_preset_mode() == "Middle") {
             id(fan_output).turn_on().set_speed(80).perform();
             id(mode) = 1;
-          } else if (id(fan_output).preset_mode == "Hight") {
+          } else if (id(fan_output).get_preset_mode() == "Hight") {
             id(fan_output).turn_on().set_speed(100).perform();
             id(mode) = 2;
           }
