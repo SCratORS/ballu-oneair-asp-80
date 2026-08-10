@@ -60,9 +60,7 @@ esphome:
       - output.turn_off: led_heating
       - fan.turn_off: fan_output
       - output.turn_off: buzzer   # Звук при включении отключаем
-# Автоматические запуск на 1 скорости после включения
-#      - lambda: |-
-#          id(fan_output).turn_on().set_speed(30).perform();
+#      - lambda: 'id(fan_output).turn_on().set_speed(30).perform();' # Автоматические запуск на 1 скорости после включения
 
 # Enable logging
 logger:
@@ -183,7 +181,6 @@ script:
       - lambda: 'id(errors) = true;'
       - script.execute: play_invalid
       
-        
   - id: led_check
     then:
       - if:
@@ -282,6 +279,7 @@ script:
           id: heater_output
           state: false
       - output.turn_off: heating_gpio
+      - script.execute: led_check
               
 interval:
   - interval: 30s
