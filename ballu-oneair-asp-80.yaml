@@ -49,18 +49,13 @@ esphome:
       - output.turn_on: buzzer  # Звук при включении включаем
       - output.turn_off: heating_gpio
       - output.turn_off: fan_power
-      - output.turn_on: led_1_speed
-      - output.turn_on: led_2_speed
-      - output.turn_on: led_3_speed
-      - output.turn_on: led_heating
+      - script.execute: led_on
       - delay: 700ms
-      - output.turn_off: led_1_speed
-      - output.turn_off: led_2_speed
-      - output.turn_off: led_3_speed
-      - output.turn_off: led_heating
+      - script.execute: led_off
       - fan.turn_off: fan_output
       - output.turn_off: buzzer   # Звук при включении отключаем
-#      - lambda: 'id(fan_output).turn_on().set_speed(30).perform();' # Автоматические запуск на 1 скорости после включения
+      - lambda: 'id(heat_current).publish_state(0);'
+#      - lambda: 'id(fan_output).turn_on().set_speed(30).perform();' # Автоматический запуск на 1 скорости после включения
 
 # Enable logging
 logger:
@@ -98,8 +93,8 @@ output:
     pin: ${fan_pwm}
     id: fan_pwm_gpio
     inverted: True
-    min_power: 0.22 # Минимальная мощность. при попытке выставить мощность менее 20% турбина не запускается, но если активировать эту строку, то почему-то вообще не работает. Шим тупо не включается.
-    max_power: 0.74 # Масксимальная мощность подаваемая на турбину. Больше 74 - нехватает питания для турбины, будет перезагрузка при попытке включить ее на максимум.
+    min_power: 0.22
+    max_power: 0.74
     zero_means_zero: True
 
   - platform: ledc
@@ -179,8 +174,7 @@ script:
           id: led_info
           effect: error
       - lambda: 'id(errors) = true;'
-      - script.execute: play_invalid
-      
+      - script.execute: play_invalid     
   - id: led_check
     then:
       - if:
@@ -208,60 +202,32 @@ script:
                 output.turn_off: led_heating
           - lambda: |-
               if (id(fan_output).state) {
-                if (id(fan_output).speed >= 30) id(led_1_speed).set_level(id(half_led)?0.15:1);
-                else id(led_1_speed).turn_off();
-                if (id(fan_output).speed >= 65) id(led_2_speed).set_level(id(half_led)?0.15:1);
-                else id(led_2_speed).turn_off();
-                if (id(fan_output).speed >= 100) id(led_3_speed).set_level(id(half_led)?0.15:1);
-                else id(led_3_speed).turn_off();
+                if (id(fan_output).speed >= 30) id(led_1_speed).set_level(id(half_led)?0.15:1); else id(led_1_speed).turn_off();
+                if (id(fan_output).speed >= 65) id(led_2_speed).set_level(id(half_led)?0.15:1); else id(led_2_speed).turn_off();
+                if (id(fan_output).speed >= 100) id(led_3_speed).set_level(id(half_led)?0.15:1);else id(led_3_speed).turn_off();
               } else {
                 id(led_1_speed).turn_off();
                 id(led_2_speed).turn_off();
                 id(led_3_speed).turn_off();
               }
+  - id: led_on
+    then:
+      - output.turn_on: led_1_speed
+      - output.turn_on: led_2_speed
+      - output.turn_on: led_3_speed
+      - output.turn_on: led_heating
   - id: led_off
     then:
       - output.turn_off: led_1_speed
       - output.turn_off: led_2_speed
       - output.turn_off: led_3_speed
       - output.turn_off: led_heating
-        
-  - id: fan_start
-    then:
-      - if:
-          condition:
-            binary_sensor.is_on: sensor_open
-          then:
-            - script.execute: play_error
-            - script.execute: fan_stop
-          else:
-            - script.execute: play_beep_short
-            - output.turn_on: fan_power
-            - script.execute: led_check
-              
-  - id: fan_stop
-    then:
-      - output.turn_off: fan_power
-      - if:
-          condition:
-            switch.is_on: heater_output
-          then:
-            script.execute: heat_stop
-      - script.execute: led_check
-  - id: heat_output_change
-    then:
-      - script.execute: heat_change
-      - lambda: 'global_preferences->sync();'
   - id: heat_set_target
     then:
-      if:
-        condition:
-          switch.is_on: heater_output
-        then:
-          - lambda: |-
-              float target =  std::clamp(((id(target_power).state * (id(fan_output).speed / 100.0f)) / 100.0f) * (1.0f + (20.0f - id(temperature).state)/100.0f),0.0f,1.0f);
-              id(heating_gpio).set_level(target);
-              id(heat_current).publish_state(target * 100.0);
+      lambda: |-
+        float target =  std::clamp(((id(target_power).state * (id(fan_output).speed / 100.0f)) / 100.0f) * (1.0f + (20.0f - id(temperature).state)/100.0f),0.0f,1.0f);
+        id(heating_gpio).set_level(target);
+        id(heat_current).publish_state(target * 100.0);
   - id: heat_change
     then:
       - script.execute: led_check             
@@ -271,8 +237,7 @@ script:
           then:
             script.execute: heat_set_target
           else:
-            script.execute: heat_stop
-            
+            script.execute: heat_stop  
   - id: heat_stop
     then: 
       - switch.template.publish:
@@ -280,6 +245,7 @@ script:
           state: false
       - output.turn_off: heating_gpio
       - script.execute: led_check
+      - lambda: 'id(heat_current).publish_state(0);'
               
 interval:
   - interval: 30s
@@ -298,7 +264,7 @@ interval:
                   - lambda: 'return id(fan_rpm).state < 1.0;'
                 then:
                   - script.execute: play_error
-                  - script.execute: fan_stop
+                  - fan.turn_off: fan_output
                   
 sensor: 
   - platform: pulse_counter
@@ -342,7 +308,11 @@ sensor:
       reference_temperature: 20°C
       reference_resistance: 12.5kOhm
     on_value:
-      script.execute: heat_set_target
+      if:
+        condition:
+          switch.is_on: heater_output
+        then:
+          script.execute: heat_set_target
 
 text_sensor:
   - platform: wifi_info
@@ -455,40 +425,22 @@ binary_sensor:
           - ON for at least 10s
         then:
           - output.turn_on: buzzer
-          - output.turn_on: led_1_speed
-          - output.turn_on: led_2_speed
-          - output.turn_on: led_3_speed
-          - output.turn_on: led_heating
+          - script.execute: led_on
           - delay: 50ms
           - output.turn_off: buzzer
-          - output.turn_off: led_1_speed
-          - output.turn_off: led_2_speed
-          - output.turn_off: led_3_speed
-          - output.turn_off: led_heating
+          - script.execute: led_off
           - delay: 50ms
           - output.turn_on: buzzer
-          - output.turn_on: led_1_speed
-          - output.turn_on: led_2_speed
-          - output.turn_on: led_3_speed
-          - output.turn_on: led_heating
+          - script.execute: led_on
           - delay: 50ms
           - output.turn_off: buzzer
-          - output.turn_off: led_1_speed
-          - output.turn_off: led_2_speed
-          - output.turn_off: led_3_speed
-          - output.turn_off: led_heating
+          - script.execute: led_off
           - delay: 50ms
           - output.turn_on: buzzer
-          - output.turn_on: led_1_speed
-          - output.turn_on: led_2_speed
-          - output.turn_on: led_3_speed
-          - output.turn_on: led_heating
+          - script.execute: led_on
           - delay: 50ms
           - output.turn_off: buzzer
-          - output.turn_off: led_1_speed
-          - output.turn_off: led_2_speed
-          - output.turn_off: led_3_speed
-          - output.turn_off: led_heating
+          - script.execute: led_off
           - lambda: |-
               ESP_LOGW("DMF", "Erase settings and restart...");
               wifi::global_wifi_component->save_wifi_sta("-----", "");
@@ -528,9 +480,24 @@ fan:
     on_state:
       script.execute: heat_change
     on_turn_on: 
-      script.execute: fan_start
+      if:
+        condition:
+          binary_sensor.is_on: sensor_open
+        then:
+          - script.execute: play_error
+          - fan.turn_off: fan_output
+        else:
+          - script.execute: play_beep_short
+          - output.turn_on: fan_power
+          - script.execute: led_check
     on_turn_off:
-      script.execute: fan_stop
+      - output.turn_off: fan_power
+      - if:
+          condition:
+            switch.is_on: heater_output
+          then:
+            script.execute: heat_stop
+      - script.execute: led_check
 
 number:
   - platform: template
@@ -544,7 +511,8 @@ number:
     icon: "mdi:thermometer-lines"
     unit_of_measurement: "%"
     on_value:
-      script.execute: heat_output_change
+      - script.execute: heat_change
+      - lambda: 'global_preferences->sync();'
 
 switch:
   - platform: template
