@@ -183,24 +183,8 @@ script:
           then:
             script.execute: led_off
           else:
-          - if:
-              condition:
-                switch.is_on: heater_output
-              then:
-                if:
-                  condition:
-                    lambda: "return id(half_led);"
-                  then:
-                    output.set_level:
-                      id: led_heating
-                      level: 15%
-                  else:
-                    output.set_level:
-                      id: led_heating
-                      level: 100%
-              else: 
-                output.turn_off: led_heating
-          - lambda: |-
+            lambda: |-
+              if (id(heater_output).state) id(led_heating).set_level(id(half_led)?0.15:1); else id(led_heating).turn_off();
               if (id(fan_output).state) {
                 if (id(fan_output).speed >= 30) id(led_1_speed).set_level(id(half_led)?0.15:1); else id(led_1_speed).turn_off();
                 if (id(fan_output).speed >= 65) id(led_2_speed).set_level(id(half_led)?0.15:1); else id(led_2_speed).turn_off();
