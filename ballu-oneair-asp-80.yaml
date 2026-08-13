@@ -349,7 +349,7 @@ binary_sensor:
       - delayed_off: 100ms
     on_multi_click:
       - timing:
-          - ON for at least 2s
+          - ON for at least 1s
         then:
           - script.execute: play_beep
           - fan.turn_off: fan_output
@@ -378,22 +378,8 @@ binary_sensor:
     filters:
       - delayed_on: 100ms
       - delayed_off: 100ms
-    on_multi_click:
-      - timing:
-          - ON for at least 3s
-        then:
-          if:
-            condition:
-              switch.is_off: heater_output
-            then:
-              switch.turn_on: heater_output
     on_press:
-      then:
-        if:
-          condition:
-            switch.is_on: heater_output
-          then:
-            switch.turn_off: heater_output
+      switch.toggle: heater_output
 
   - platform: gpio
     pin: 
@@ -404,32 +390,6 @@ binary_sensor:
     filters:
       - delayed_on: 100ms
       - delayed_off: 100ms
-    on_multi_click:
-      - timing:
-          - ON for at least 10s
-        then:
-          - output.turn_on: buzzer
-          - script.execute: led_on
-          - delay: 50ms
-          - output.turn_off: buzzer
-          - script.execute: led_off
-          - delay: 50ms
-          - output.turn_on: buzzer
-          - script.execute: led_on
-          - delay: 50ms
-          - output.turn_off: buzzer
-          - script.execute: led_off
-          - delay: 50ms
-          - output.turn_on: buzzer
-          - script.execute: led_on
-          - delay: 50ms
-          - output.turn_off: buzzer
-          - script.execute: led_off
-          - lambda: |-
-              ESP_LOGW("DMF", "Erase settings and restart...");
-              wifi::global_wifi_component->save_wifi_sta("-----", "");
-              delay(500);
-              esp_restart();
     on_press:
       then:
         - script.execute: play_beep_short
