@@ -209,7 +209,7 @@ script:
   - id: heat_set_target
     then:
       lambda: |-
-        float target =  std::clamp(((id(target_power).state * (id(fan_output).speed / 100.0f)) / 100.0f) * (1.0f + (20.0f - id(temperature).state)/100.0f),0.0f,1.0f);
+        float target =  std::clamp((id(target_power).state * id(fan_output).speed / 10000.0f) * (2.0f - 0.05f * id(temperature).state),0.0f,1.0f);
         id(heating_gpio).set_level(target);
         id(heat_current).publish_state(target * 100.0);
   - id: heat_change
