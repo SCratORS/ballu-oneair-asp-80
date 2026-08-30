@@ -1,7 +1,51 @@
 # Прошивка для подменной платы для бризера Ballu OneAir ASP-80
 
-![PXL_20250702_163442434](https://github.com/user-attachments/assets/67c96b4d-384d-437b-9dde-b87462f002dc)
+![Плата управления](docs/media/install-01-brezer.jpg)
 
-### Купить плату 👉👉👉[ТУТ](https://shop.scrators.ru/index.php?route=product/product&language=ru-ru&product_id=61)👈👈👈
+Подменная плата управления ([SCHome N80W-RU](https://shop.scrators.ru), ESP32 + Wi-Fi 2,4 ГГц) заменяет штатную плату управления бризера Ballu OneAir ASP-80 и добавляет ему:
 
-### Инструкция по установке платы в бризер 👉👉👉[ТУТ](https://github.com/SCratORS/ballu-oneair-asp-80/wiki/%D0%A3%D1%81%D1%82%D0%B0%D0%BD%D0%BE%D0%B2%D0%BA%D0%B0-%D0%BF%D0%BE%D0%B4%D0%BC%D0%B5%D0%BD%D0%BD%D0%BE%D0%B9-%D0%BF%D0%BB%D0%B0%D1%82%D1%8B)👈👈👈
+- **Wi-Fi и веб-интерфейс** — управление со смартфона/ПК без облаков
+- **Интеграцию с Home Assistant** (а через него — Алиса, автоматизации, сценарии)
+- **Защиту нагревателя**: мощность ограничивается оборотами вентилятора и температурой — на штатной плате такой защиты нет
+- **Плавную регулировку** скорости вентилятора и мощности нагрева (шаг ~1%)
+- Обогрев в любую погоду (штатная плата отключает нагрев при плюсовой температуре)
+- Тихий ночной режим подсветки, отключаемую пищалку, датчик температуры
+
+### Купить плату 👉👉👉[ТУТ](https://shop.scrators.ru/index.php?route=product/product&language=ru-ru&product_id=61&path=66)👈👈👈
+
+## ⚡ Quick start
+
+Купили плату? Начните с [быстрого старта](docs/quick-start.md) — короткий сценарий «установил → подключил к Wi-Fi → проверил». Нужны подробности — [полная документация](docs/index.md).
+
+## 📚 Документация (для новичков и не только)
+
+Написана сообществом: [оглавление](docs/index.md) — с маршрутами под ваш уровень опыта.
+
+Ключевые страницы: [зачем менять штатную плату](docs/01-before-you-buy.md) · [установка](docs/02-install.md) · [первое включение](docs/03-first-run.md) · [Home Assistant](docs/05-home-assistant.md) · [прошивка и флаг TK2_mode](docs/06-firmware.md) · [неисправности](docs/10-troubleshooting.md) · [FAQ](docs/12-faq.md) · [история версий](docs/changelog.md)
+
+## Файлы
+
+| Файл | Назначение |
+|---|---|
+| [`ballu-oneair-asp-80.yaml`](ballu-oneair-asp-80.yaml) | Исходник прошивки (ESPHome). Готов к загрузке в ESPHome Builder |
+| [`bin/ballu-oneair-asp-80.ota.bin`](bin/ballu-oneair-asp-80.ota.bin) | Готовая прошивка для обновления **по воздуху** (веб-интерфейс → OTA) |
+| [`bin/ballu-oneair-asp-80.bin`](bin/ballu-oneair-asp-80.bin) | Полный образ памяти — шьётся только через USB-TTL программатор |
+
+> Не перепутайте: файл без `.ota` нельзя заливать через веб-обновление.
+
+## Совместимость
+
+- ✅ **Ballu OneAir ASP-80** — полностью поддерживаемая модель
+- ❓ **Xiaomi BioFamily N80** — тот же корпус с того же завода, но совместимость не проверена (другой нагреватель, своя плата с mi home): [подробнее](docs/01-before-you-buy.md#xiaomi-biofamily-n80)
+- ⚠️ Клоны (Mypin N82, Noizzless Azure 80 и др.) — габариты совпадают, но есть отличия в цепях нагревателя: [подробнее](docs/01-before-you-buy.md#клоны) ([распиновка N82](https://t.me/smartintercom/41440), [о Noizzless](https://t.me/smartintercom/50064))
+- ❌ Ballu OneAir ASP-100/200 — не подходит: другие корпус и компоновка, у ASP-100 есть собственный Wi-Fi ([чат](https://t.me/smartintercom/34592), [про MQTT у ASP-100](https://t.me/smartintercom/31272))
+
+## Важно
+
+- Для автоматизаций и управления с телефона нужен сервер [Home Assistant](docs/05-home-assistant.md); без него доступны [веб-интерфейс и кнопки](docs/04-web-only.md)
+- Техническая поддержка по ESPHome и Home Assistant не оказывается — есть [документация сообщества](docs/index.md) и [чат](https://t.me/smartintercom)
+- Установка платы — на свой риск: устройство работает с нагревателем, соблюдайте [меры предосторожности](docs/02-install.md#warnings)
+
+## Лицензия
+
+[GPL-3.0](LICENSE)
