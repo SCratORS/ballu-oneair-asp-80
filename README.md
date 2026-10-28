@@ -11,7 +11,7 @@
 - Обогрев в любую погоду (штатная плата отключает нагрев при плюсовой температуре)
 - Тихий ночной режим подсветки, отключаемую пищалку, датчик температуры
 
-### Купить плату 👉👉👉[ТУТ](https://shop.scrators.ru/index.php?route=product/product&language=ru-ru&product_id=61&path=66)👈👈👈
+### Купить плату 👉👉👉[ТУТ](https://shop.scrators.ru/index.php?route=product/product&language=ru-ru&product_id=26)👈👈👈
 
 ## ⚡ Quick start
 
